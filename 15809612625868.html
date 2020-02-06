@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Echarts 为柱状图添加多个 label 与动态调整 position 的方案 - Alan's Lab
+  离线安装 node-gyp - Alan's Lab
   
   </title>
   
@@ -96,10 +96,10 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>Echarts 为柱状图添加多个 label 与动态调整 position 的方案</h1>
+          <h1>离线安装 node-gyp</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2019/09/20</span>
+          <span class="date">2020/02/06</span>
 
           
            
@@ -114,210 +114,49 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <p>上周在实现一个 echarts 图表需求的时候总结了一些小技巧，目前网上没有看到到类似的方案，记录分享一下。</p>
+      <p>疫情期间不得已要启用远程办公，公司的 windows 远程桌面有内网 npm 但无法连接外网，环境配置起来非常难受。在配置 node-gyp 的时候花了不少时间，而且网上没有一个清晰的教程，这里整理一下。</p>
 
-<p>观察下面的图表：</p>
+<p>仅针对 windows 环境，但其他环境也是类似的。</p>
 
-<p><img src="media/15689463938754/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-09-15%20%E4%B8%8B%E5%8D%882.43.26.png" alt="屏幕快照 2019-09-15 下午2.43.26"/></p>
+<h2 id="toc_0">准备依赖</h2>
 
-<p>首先这是一个柱状堆积图，每一条柱子有两部分堆积形成。介绍一下数据意义方便理解需求：</p>
+<p>首先不建议使用 <a href="https://github.com/felixrieseberg/windows-build-tools">windows-build-tools</a> 这个包。我使用时遇到了几个问题，而且在没网络的环境下，操作也并没有简化很多。反而是 node-gyp 说明里介绍的<a href="https://github.com/nodejs/node-gyp#option-2">手动安装</a>更加快捷。</p>
 
-<p>一条柱代表一个任务，左半边的长度代表完成任务人数的比例，右半边的长度代表未完成任务人数的比例，加起来必定是 100% ，所以每条柱子都一样长占满整行。柱子内的数字为具体人数，最右侧百分比为完成人数的比例。</p>
+<p>windows 下依赖就两个，Visual Studio Build Tools 和 Python 。Python 版本 node-gyp 要求 2.7/3.5/3.6/3.7 都可以，保险起见建议装 2.7 。</p>
 
-<p>我们快速实现一个差不多的图表：</p>
+<h3 id="toc_1">离线安装 Visual Studio Build Tools</h3>
 
-<pre><code class="language-javascript">const myChart = echarts.init(document.getElementById(&#39;main&#39;));
-const option = {
-  dataset: {
-    source: [
-      [&#39;任务名&#39;, &#39;完成率&#39;, &#39;未完成率&#39;, &#39;完成人数&#39;, &#39;未完成人数&#39;],
-      [&#39;任务1&#39;, 50, 50, 5, 5],
-      [&#39;任务2&#39;, 4, 96, 2, 50]
-    ]
-  },
-  yAxis: {
-    type: &#39;category&#39;
-  },
-  xAxis: {},
-  grid: {
-    containLabel: true
-  },
-  series: [
-    {
-      type: &#39;bar&#39;,
-      stack: &#39;samestack&#39;,
-      label: {
-        show: true,
-        position: &#39;insideRight&#39;,
-        formatter: &#39;{@[3]}&#39;
-      }
-    },
-    {
-      type: &#39;bar&#39;,
-      stack: &#39;samestack&#39;,
-      label: {
-        show: true,
-        position: &#39;insideRight&#39;,
-        formatter: &#39;{@[4]}&#39;
-      }
-    }
-  ]
-};
-myChart.setOption(option);
+<p>网上主要推荐的是 2015、2017 版本的 Build Tools ，但 2019 版本其实包含了前面的内容，node-gyp 说明里让下载的也是最新的 2019 版。</p>
+
+<p>1.下载 <a href="https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools">Visual Studio Build Tools</a><br/>
+2.打开 CMD 执行以下命令以下载所有需要的安装包到本地：</p>
+
+<pre><code class="language-bash">vs_buildtools.exe --layout C:\Users\&lt;你的用户名&gt;\Desktop\BuildTooloffline\cache --add Microsoft.VisualStudio.Workload.VCTools
 </code></pre>
 
-<p>看起来像是这样：<br/>
-<img src="media/15689463938754/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-09-15%20%E4%B8%8B%E5%8D%883.15.19.png" alt="屏幕快照 2019-09-15 下午3.15.19"/></p>
+<p>3.将前面指定的缓存文件夹复制到离线的电脑上，执行安装。<br/>
+4.执行下面命令：</p>
 
-<p>这个图表有两个问题：</p>
-
-<ol>
-<li>echart 中没有办法简单添加最右侧的百分比 label</li>
-<li>左半边柱子在数量太小的时候没空间容纳数字</li>
-</ol>
-
-<p>前面说了 echarts 没法设置多个 label ，但它支持相当强大的富文本配置。对于第一个问题，我们可以通过富文本标签模拟一个额外的 label 。首先，修改右半边柱子的 formatter ，让完成率也显示在同一个 label 中。</p>
-
-<pre><code class="language-javascript">[
-  {
-    // 左半边...
-  },
-  {
-    type: &#39;bar&#39;,
-    stack: &#39;samestack&#39;,
-    label: {
-      show: true,
-      position: &#39;insideRight&#39;,
-      formatter: &#39;{people|{@[4]}} {percentage|{@[1]}%}&#39;,
-      rich: {
-        people: {
-          color: &#39;white&#39;
-        },
-        percentage: {
-          color: &#39;red&#39;
-        }
-      }
-    }
-  }
-]
+<pre><code class="language-bash">npm config set msvs_version 2017
 </code></pre>
 
-<p>效果如下：</p>
+<h2 id="toc_2">准备 node headers 文件</h2>
 
-<p><img src="media/15689463938754/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-09-15%20%E4%B8%8B%E5%8D%883.27.12.png" alt="屏幕快照 2019-09-15 下午3.27.12"/></p>
+<p>1.下载下面两个文件：</p>
 
-<p>要把红色的百分比移出柱子外需要 <code>label.distance</code> 和 <code>rich.percentage.width</code> 两个配置：</p>
+<p><a href="https://nodejs.org/download/release/v12.14.1/node-v12.14.1-headers.tar.gz">https://nodejs.org/download/release/v12.14.1/node-v12.14.1-headers.tar.gz</a></p>
 
-<p>通过 width 给 percentage 这一个文本块一个固定的宽度，再给 distance 设置赋值配合 <code>position: &#39;insideRight&#39;</code> 就可以让百分比的文本移出柱子外面。宽度设置为多少并不重要，因为文本是左对齐且没有超出裁剪，所以只要保持一致即可：</p>
+<p><a href="https://nodejs.org/download/release/v12.14.1/win-x64/node.lib">https://nodejs.org/download/release/v12.14.1/win-x64/node.lib</a></p>
 
-<pre><code class="language-javascript">{
-  // ...
-  label: {
-    show: true,
-    position: &#39;insideRight&#39;,
-    distance: -1,
-    formatter: &#39;{people|{@[4]}} {percentage|{@[1]}%}&#39;,
-    rich: {
-      people: {
-        color: &#39;white&#39;
-      },
-      percentage: {
-        color: &#39;red&#39;,
-        width: 1
-      }
-    }
-  }
-}
+<p>2.复制到离线机器上，解压 <code>headers.tar.gz</code><br/>
+3.上一步解压出来的目录中，在 include 文件夹的同级目录新建一个 Release 文件夹<br/>
+4.将 <code>node.lib</code> 复制到 Release 文件夹中。<br/>
+5.执行下面的命令：</p>
+
+<pre><code class="language-bash">npm config set nodedir &lt;include 和 Release 的父文件夹的路径&gt;
 </code></pre>
 
-<p>效果如下：</p>
-
-<p><img src="media/15689463938754/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-09-15%20%E4%B8%8B%E5%8D%883.35.59.png" alt="屏幕快照 2019-09-15 下午3.35.59"/></p>
-
-<p>到这里第一个问题就解决了，可以继续细调以完全还原设计稿。</p>
-
-<p>我们现在继续看一下另一个问题：如果柱子太窄，柱子内的文本会没有充足空间显示完。</p>
-
-<p>以左半边柱子为例，为了让它在数值较小的情况下也能完全显示，我希望它在 20% 以下的时候显示在柱子外，20%或以上的时候才显示在柱子内，如下图所示：</p>
-
-<p><img src="media/15689463938754/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-09-15%20%E4%B8%8B%E5%8D%884.22.17%202.png" alt="屏幕快照 2019-09-15 下午4.22.17 2"/></p>
-
-<p>同样，这个功能也没有现成的， echarts 也不支持针对单个柱子动态改变 <code>label.position</code> 配置。但我们可以通过预先计算出内部、外部要显示的内容，并在 <code>dataset</code> 中增加额外字段的方式达到这个目的。首先可以先通过 js 为 <code>dataset</code> 扩展两个字段：</p>
-
-<pre><code class="language-javascript">const options = {
-  dataset: {
-    source: [
-      [&#39;任务名&#39;, &#39;...&#39;, &#39;已完成（内部）&#39;, &#39;已完成（外部）&#39;],
-      [&#39;任务1&#39;,  &#39;...&#39;, 50,            &#39;看不见我&#39;],
-      [&#39;任务2&#39;,  &#39;...&#39;, &#39;看不见我&#39;,      2]
-    ]
-  },
-  // ...
-}
-</code></pre>
-
-<blockquote>
-<p>表中的 <code>&#39;看不见我&#39;</code> 仅为演示所用，实际使用中使用空字符串即可。</p>
-</blockquote>
-
-<p>然后用解决第一个问题相同的方式，在一个 label 中同时显示“已完成（内部）”和“已完成（外部）”两个字段的内容，就可以完成这个需求（没这么简单）：</p>
-
-<pre><code class="language-javascript">[
-  {
-    // ...
-    label: {
-      // ...
-      distance: -0,                                  // 3
-      formatter: &#39;{inside|{@[5]}}{outside|{@[6]}}&#39;,  // 1
-      rich: {
-        inside: {
-          color: &#39;white&#39;,
-          width: 0,                                  // 3
-          align: &#39;right&#39;                             // 2
-        },
-        outside: {
-          color: &#39;red&#39;,
-          width: 0,                                  // 3
-          align: &#39;left&#39;                              // 2
-        }
-      }
-    },
-    z: 4                                             // 4
-  },
-  {
-    // 右半边柱子...
-  }
-]
-</code></pre>
-
-<p>我们给左半边柱子的 label 定义了两个富文本格式：<code>inside</code> 和 <code>outside</code>：</p>
-
-<ol>
-<li>formatter 中同时显示<code>已完成（内部）</code>、<code>已完成（外部）</code>的内容，但总有其中一个是空字符串，以起到选择性渲染在柱子内部或外部的作用。</li>
-<li><code>inside</code> 右对齐，文字变多时向左边生长，<code>outside</code> 相反</li>
-<li>前面说过 width 具体数值不重要，设置成 0 也是没有问题的</li>
-<li>由于左边柱子先渲染，会被右边盖住，所以提高 z 值让左边柱子的 label 高于右半边不被遮挡</li>
-</ol>
-
-<p>得到的效果如下：</p>
-
-<p><img src="media/15689463938754/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-09-15%20%E4%B8%8B%E5%8D%884.17.31.png" alt="屏幕快照 2019-09-15 下午4.17.31"/></p>
-
-<p>发生了什么。。。文本对齐的配置没有生效，全部变成居中挤在一起了。略经搜索之后了解到是 ZRender 的一个 bug 导致的。先不去深究，具体在这个例子中的表现是 formatter 中排前面的不能右对齐，排后面的不能左对齐。</p>
-
-<p>那快速 hack 一下在 formatter 中把内外部渲染标签的顺序调换就好了。顺便把 dataset 中的 <code>&#39;看不见我&#39;</code> 改成 <code>&#39;&#39;</code> 以查看最终的效果。</p>
-
-<pre><code class="language-javascript">{
-  // ...
-  // outside 放前面，inside 换到后面
-  formatter: &#39;{outside|{@[6]}}{inside|{@[5]}}&#39;,
-  // ...
-}
-</code></pre>
-
-<p>至此我们完美还原了设计稿，并且还优化了一个它未考虑到的边界条件。考虑到篇幅，还有一些旁枝末节的还原工作全都省略掉了，最终效果如下（请脑补最开头那张蓝色图表）：</p>
-
-<p><img src="media/15689463938754/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-09-15%20%E4%B8%8B%E5%8D%884.22.17.png" alt="屏幕快照 2019-09-15 下午4.22.17"/></p>
+<p>现在就能在离线机器上正常使用 node-gyp 了。</p>
 
 
     
@@ -328,13 +167,13 @@ myChart.setOption(option);
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15809612625868.html" 
-          title="Previous Post: 离线安装 node-gyp">&laquo; 离线安装 node-gyp</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="15689463938754.html" 
+          title="Next Post: Echarts 为柱状图添加多个 label 与动态调整 position 的方案">Echarts 为柱状图添加多个 label 与动态调整 position 的方案 &raquo;</a>
       
       </p>
         </div>

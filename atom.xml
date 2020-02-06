@@ -4,13 +4,66 @@
   <title><![CDATA[Alan's Lab]]></title>
   <link href="https://www.alanslab.top/atom.xml" rel="self"/>
   <link href="https://www.alanslab.top/"/>
-  <updated>2020-01-13T12:50:29+08:00</updated>
+  <updated>2020-02-06T21:53:15+08:00</updated>
   <id>https://www.alanslab.top/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[离线安装 node-gyp]]></title>
+    <link href="https://www.alanslab.top/15809612625868.html"/>
+    <updated>2020-02-06T11:54:22+08:00</updated>
+    <id>https://www.alanslab.top/15809612625868.html</id>
+    <content type="html"><![CDATA[
+<p>疫情期间不得已要启用远程办公，公司的 windows 远程桌面有内网 npm 但无法连接外网，环境配置起来非常难受。在配置 node-gyp 的时候花了不少时间，而且网上没有一个清晰的教程，这里整理一下。</p>
+
+<p>仅针对 windows 环境，但其他环境也是类似的。</p>
+
+<h2 id="toc_0">准备依赖</h2>
+
+<p>首先不建议使用 <a href="https://github.com/felixrieseberg/windows-build-tools">windows-build-tools</a> 这个包。我使用时遇到了几个问题，而且在没网络的环境下，操作也并没有简化很多。反而是 node-gyp 说明里介绍的<a href="https://github.com/nodejs/node-gyp#option-2">手动安装</a>更加快捷。</p>
+
+<p>windows 下依赖就两个，Visual Studio Build Tools 和 Python 。Python 版本 node-gyp 要求 2.7/3.5/3.6/3.7 都可以，保险起见建议装 2.7 。</p>
+
+<h3 id="toc_1">离线安装 Visual Studio Build Tools</h3>
+
+<p>网上主要推荐的是 2015、2017 版本的 Build Tools ，但 2019 版本其实包含了前面的内容，node-gyp 说明里让下载的也是最新的 2019 版。</p>
+
+<p>1.下载 <a href="https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools">Visual Studio Build Tools</a><br/>
+2.打开 CMD 执行以下命令以下载所有需要的安装包到本地：</p>
+
+<pre><code class="language-bash">vs_buildtools.exe --layout C:\Users\&lt;你的用户名&gt;\Desktop\BuildTooloffline\cache --add Microsoft.VisualStudio.Workload.VCTools
+</code></pre>
+
+<p>3.将前面指定的缓存文件夹复制到离线的电脑上，执行安装。<br/>
+4.执行下面命令：</p>
+
+<pre><code class="language-bash">npm config set msvs_version 2017
+</code></pre>
+
+<h2 id="toc_2">准备 node headers 文件</h2>
+
+<p>1.下载下面两个文件：</p>
+
+<p><a href="https://nodejs.org/download/release/v12.14.1/node-v12.14.1-headers.tar.gz">https://nodejs.org/download/release/v12.14.1/node-v12.14.1-headers.tar.gz</a></p>
+
+<p><a href="https://nodejs.org/download/release/v12.14.1/win-x64/node.lib">https://nodejs.org/download/release/v12.14.1/win-x64/node.lib</a></p>
+
+<p>2.复制到离线机器上，解压 <code>headers.tar.gz</code><br/>
+3.上一步解压出来的目录中，在 include 文件夹的同级目录新建一个 Release 文件夹<br/>
+4.将 <code>node.lib</code> 复制到 Release 文件夹中。<br/>
+5.执行下面的命令：</p>
+
+<pre><code class="language-bash">npm config set nodedir &lt;include 和 Release 的父文件夹的路径&gt;
+</code></pre>
+
+<p>现在就能在离线机器上正常使用 node-gyp 了。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Echarts 为柱状图添加多个 label 与动态调整 position 的方案]]></title>
