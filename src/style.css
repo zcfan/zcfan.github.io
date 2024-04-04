@@ -89,6 +89,9 @@ ul {
 #study-room {
   width: 60vw;
   height: 60vw;
+  max-height: 100vh;
+  opacity: 0;
+  transition: opacity 300ms;
 }
 
 @media (width <= 750px) {
@@ -103,4 +106,12 @@ ul {
     width: 75vw;
     height: 75vw;
   }
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  font-weight: 100;
 }
