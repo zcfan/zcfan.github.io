@@ -11,6 +11,11 @@
   },
   "devDependencies": {
     "@types/three": "^0.163.0",
+    "@types/react": "^18.2.74",
+    "@types/react-dom": "^18.2.24",
+    "normalize.css": "^8.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "three": "^0.163.0",
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
