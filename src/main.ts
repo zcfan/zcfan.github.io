@@ -20,6 +20,12 @@ var renderer = new THREE.WebGLRenderer({
   antialias: true
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
+
+window.onresize = () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix()
+}
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls( camera, renderer.domElement );
