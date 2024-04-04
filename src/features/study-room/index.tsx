@@ -35,6 +35,7 @@ function initScene(container: HTMLDivElement, onLoad: () => void) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   container.appendChild(renderer.domElement);
   renderer.setSize(width, height);
+  renderer.setPixelRatio(window.devicePixelRatio);
 
   // setup camera
   const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
@@ -98,10 +99,8 @@ function initScene(container: HTMLDivElement, onLoad: () => void) {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const { clientX, clientY } = event;
-    const x = clientX - width / 2;
-    const y = clientY - height / 2;
-    targetX = y * 0.0005;
-    targetY = ROOM_Y_ROTATION + x * 0.001;
+    targetY = ROOM_Y_ROTATION + ((clientX - width / 2) / (width / 2)) * 0.5;
+    targetX = ((clientY - height / 2) / (height / 2)) * 0.2;
   }
   window.addEventListener("pointermove", onPointerMove);
 
