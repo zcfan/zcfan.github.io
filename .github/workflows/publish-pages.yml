@@ -1,0 +1,30 @@
+name: Publish static content to Pages
+on: 
+    push:
+        branches:
+            - main
+permissions:
+    contents: write
+jobs:
+    build-and-deploy:
+        concurrency: ci-${{ github.ref }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: action/checkout@v4
+
+            - name: Use Node.js
+              uses: action/setup-node@v4
+              with:
+                node-version: '20.x'
+
+            - name: Setup Dependencies
+              run: |
+                npm ci
+                npm run checkts
+                npm run build
+
+            - name: Deploy
+              uses: JamesIves/github-pages-deploy-action@v4
+              with:
+                folder: dist
