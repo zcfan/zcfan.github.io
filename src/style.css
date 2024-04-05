@@ -90,6 +90,53 @@ ul {
   color: white;
 }
 
+.navScene {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 300ms;
+}
+
+.navScene:hover {
+  background-color: black;
+}
+
+.prevScene {
+  left: 24px;
+}
+
+.nextScene {
+  right: 24px;
+}
+
+.navScene::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border-right: solid 1px black;
+  border-top: solid 1px black;
+  transition: border-color 300ms;
+}
+
+.navScene:hover::before {
+  border-color: white;
+}
+
+.prevScene::before {
+  transform: translateX(4px) rotate(-135deg);
+}
+
+.nextScene::before {
+  transform: translateX(-4px) rotate(45deg);
+}
+
 /* #endregion */
 
 #study-room {
