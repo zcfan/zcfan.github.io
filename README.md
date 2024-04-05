@@ -7,7 +7,15 @@ zcfan user page
 - android chrome 上点门得点偏下一些才能触发动画。应该是 container 的 offsetTop 数值有问题，大概率是顶部浏览器导航条高度导致，有空看看
 - 换用 react-three-fiber 组织 3d 场景, or find another better way to orgnize threejs code base.
 
-## NOTE:
+## DEV NOTE:
+
+### 2024-04-05:
+
+Going to make one more shader demos in the rest of holiday.
+
+[This tutorial](https://www.youtube.com/watch?v=ixEPBzrhgTg&list=PLTEbuqk52pICikiHfD-a52dxEav5UqMLy) I'm planing to follow looks fantasic yet easy to implement.
+
+After that I'll keep working on the [No Black Box Machine Learning Course – Learn Without Libraries](https://www.youtube.com/watch?v=vDDjtwQDw2k) part two.
 
 ### 2024-04-04:
 
