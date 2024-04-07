@@ -12,7 +12,8 @@ export default function App() {
   );
 }
 
-const SCENES = [StudyRoom, DisplacedTorus];
+// const SCENES = [StudyRoom, DisplacedTorus];
+const SCENES = [DisplacedTorus, StudyRoom];
 
 function Scenes() {
   const [ind, setInd] = useState(0);

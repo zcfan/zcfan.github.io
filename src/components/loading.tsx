@@ -12,7 +12,6 @@ export default function Loading({ loading }: { loading: boolean }) {
     const handler = setInterval(() => {
       if (!spanRef.current) return;
       const tail = new Array(countRef.current % 4).fill(".").join("");
-      console.log(tail);
       spanRef.current.innerText = `${TEXT}${tail}`;
       countRef.current++;
     }, 500);
