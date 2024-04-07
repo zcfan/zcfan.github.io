@@ -3868,7 +3868,6 @@ float pnoise(vec3 p) {
           // shrink the range of displacement by half
           (cycle - 0.5) * 2.
           , 0., 1.);
-        // float noiseMultiplier = clamp(sin((uv.x + ((uPointing + PI) / 2.))*2.*PI)-0.5, 0., 1.);
         float noise = pnoise(position * 3. + uTime / 6.);
         float displacement = noise * noiseMultiplier * uIntensity;
         vec3 newPosition = position + normal * displacement;
