@@ -18,13 +18,6 @@ export default function DisplacedTorus() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    document.body.style = "background-color: #eee;";
-    return () => {
-      document.body.style = "";
-    };
-  }, []);
-
-  useEffect(() => {
     if (!canvasRef.current) return;
     return initScene(canvasRef.current);
   }, []);
@@ -41,7 +34,7 @@ function initScene(container: HTMLDivElement) {
   renderer.setSize(width, height);
   renderer.setPixelRatio(window.devicePixelRatio);
   container.appendChild(renderer.domElement);
-  scene.background = new THREE.Color(0xeeeeee);
+  scene.background = new THREE.Color(0xffffff);
   camera.position.set(0, 0, 7);
   camera.lookAt(0, 0, 0);
 
