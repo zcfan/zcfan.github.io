@@ -136,15 +136,6 @@ function initScene(container: HTMLDivElement) {
     targetZ = -Math.atan2(-(y - 0.5) * 2, (x - 0.5) * 2);
     targetIndensity = Math.sqrt(Math.pow(y - 0.5, 2) + Math.pow(x - 0.5, 2));
   });
-
-  function onPointerDown() {
-    targetIndensity = 1.3;
-  }
-  window.addEventListener("pointerdown", onPointerDown);
-  function onPointerUp() {
-    targetIndensity = 0;
-  }
-  window.addEventListener("pointerup", onPointerUp);
   // #endregion
 
   function animate() {
@@ -164,7 +155,5 @@ function initScene(container: HTMLDivElement) {
     renderer.dispose();
     removeOnResize();
     remoteWindowPointOrTouchMove();
-    window.removeEventListener("pointerdown", onPointerDown);
-    window.removeEventListener("pointerup", onPointerUp);
   };
 }
