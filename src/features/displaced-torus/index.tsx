@@ -18,6 +18,13 @@ export default function DisplacedTorus() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    document.body.style = "background-color: #eee;";
+    return () => {
+      document.body.style = "";
+    };
+  }, []);
+
+  useEffect(() => {
     if (!canvasRef.current) return;
     return initScene(canvasRef.current);
   }, []);
@@ -34,8 +41,8 @@ function initScene(container: HTMLDivElement) {
   renderer.setSize(width, height);
   renderer.setPixelRatio(window.devicePixelRatio);
   container.appendChild(renderer.domElement);
-  scene.background = new THREE.Color(1, 1, 1);
-  camera.position.set(0, 0, 5);
+  scene.background = new THREE.Color(0xeeeeee);
+  camera.position.set(0, 0, 7);
   camera.lookAt(0, 0, 0);
 
   // #region Customize MeshStandardMaterial
@@ -96,8 +103,8 @@ function initScene(container: HTMLDivElement) {
     shader.fragmentShader = shader.fragmentShader.replace(
       /*glsl*/ `#include <color_fragment>`,
       /*glsl*/ `#include <color_fragment>
-       float noise = abs(pnoise(vec3(vViewPosition.z * 20. + uTime / 10.)) - 1.);
-       vec3 color = vec3(step(0.9, noise));
+       float noise = abs(pnoise(vec3(vViewPosition.z * 40. + uTime / 10.)) - 1.);
+       vec3 color = vec3(step(1., noise));
        diffuseColor = vec4(color, 1.0);
       `
     );
@@ -106,7 +113,7 @@ function initScene(container: HTMLDivElement) {
 
   // #region Setup scene
   const torus = new THREE.Mesh(
-    new THREE.TorusGeometry(1, 0.3, 100, 150),
+    new THREE.TorusGeometry(1.4, 0.3, 200, 200),
     material
   );
   scene.add(torus);
@@ -132,7 +139,8 @@ function initScene(container: HTMLDivElement) {
       return;
     }
     targetZ = -Math.atan2(-(y - 0.5) * 2, (x - 0.5) * 2);
-    targetIndensity = Math.sqrt(Math.pow(y - 0.5, 2) + Math.pow(x - 0.5, 2));
+    targetIndensity =
+      Math.sqrt(Math.pow(y - 0.5, 2) + Math.pow(x - 0.5, 2)) * 1.7;
   });
   // #endregion
 
