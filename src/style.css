@@ -40,11 +40,12 @@ ul {
 
 .three-scene {
   position: absolute;
-  top: 0;
+  top: 50%;
+  transform: translateY(-50%);
   right: 0;
-  bottom: 0;
   left: 0;
-  /* background-color: red; */
+  height: 100%;
+  max-height: 100vw;
 }
 
 /* #region Navigator */

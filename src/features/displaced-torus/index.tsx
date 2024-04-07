@@ -12,7 +12,6 @@ import {
 
 import pnoiseGLSL from "./pnoise.glsl";
 
-// const DEFAULT_Z = Math.PI / 2;
 const DEFAULT_Z = 0;
 
 export default function DisplacedTorus() {
@@ -79,7 +78,6 @@ function initScene(container: HTMLDivElement) {
           // shrink the range of displacement by half
           (cycle - 0.5) * 2.
           , 0., 1.);
-        // float noiseMultiplier = clamp(sin((uv.x + ((uPointing + PI) / 2.))*2.*PI)-0.5, 0., 1.);
         float noise = pnoise(position * 3. + uTime / 6.);
         float displacement = noise * noiseMultiplier * uIntensity;
         vec3 newPosition = position + normal * displacement;
