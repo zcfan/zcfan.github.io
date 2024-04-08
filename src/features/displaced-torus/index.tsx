@@ -12,7 +12,7 @@ import {
 
 import pnoiseGLSL from "./pnoise.glsl";
 import { isMatarialWithMap, isMesh } from "../../common/three/utils";
-import ColorRamp from "../../common/three/color-ramp";
+import ColorRamp, { constant } from "../../common/three/color-ramp";
 
 const DEFAULT_Z = 0;
 
@@ -55,14 +55,17 @@ function initScene(container: HTMLDivElement) {
     shader.uniforms.uPointing = { value: DEFAULT_Z };
     shader.uniforms.uIntensity = { value: 0 };
 
-    const demo = new ColorRamp({
-      name: "uDemo",
-      steps: [
-        { color: 0xff0000, pos: 0 },
+    const demo = new ColorRamp(
+      "uDemo",
+      [
+        { color: 0xff0000, pos: 0.25 },
         { color: 0x00ff00, pos: 0.5 },
-        { color: 0x0000ff, pos: 1 },
+        { color: 0x0000ff, pos: 0.75 },
       ],
-    });
+      {
+        interpolation: constant,
+      }
+    );
 
     shader.uniforms[demo.name] = { value: demo.texture };
 
@@ -166,10 +169,10 @@ function initScene(container: HTMLDivElement) {
     if (stopped) return;
     if (customizedShader) {
       const elapsedTime = clock.getElapsedTime();
-      customizedShader.uniforms.uTime.value = elapsedTime;
-      customizedShader.uniforms.uPointing.value = targetZ;
-      customizedShader.uniforms.uIntensity.value +=
-        (targetIndensity - customizedShader.uniforms.uIntensity.value) / 6;
+      customizedShader.uniforms.uTime!.value = elapsedTime;
+      customizedShader.uniforms.uPointing!.value = targetZ;
+      customizedShader.uniforms.uIntensity!.value +=
+        (targetIndensity - customizedShader.uniforms.uIntensity!.value) / 6;
     }
     renderer.render(scene, camera);
     requestAnimationFrame(animate);

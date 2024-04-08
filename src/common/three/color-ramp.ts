@@ -1,6 +1,8 @@
 import { Color, DataTexture } from "three";
 
-interface Step {
+type InterpolationFunction = (a: number, b: number, x: number) => number
+
+interface Stop {
   /**
    * @example 0xffffff
    */
@@ -12,17 +14,29 @@ interface Step {
   pos: number
 }
 
+interface Options {
+  interpolation: InterpolationFunction
+  textureSize: number
+}
+
 /**
+ * Partially implement the functionality of blender color ramp widget.
+ * https://docs.blender.org/manual/en/latest/interface/controls/templates/color_ramp.html
+ * 
+ * Want customize interpolation? check this easing cheat sheet:
+ * https://easings.net/
+ * 
  * @example
  * const colorPalette = new ColorRamp({
  *   name: 'uColorPalette',
- *   steps: [
+ *   stops: [
  *     { color: 0x000000, pos: 0 },
  *     { color: 0xFF0000, pos: 0.5 },
- *     { color: 0xFFFFFF, pos: 0 },
+ *     { color: 0xFFFFFF, pos: 0.75 },
+ *     // without pos 1, it will take the color of prev stop, in this case, 0xFFFFFF
+ *     // { color: 0xFFFFFF, pos: 1 },
  *   ]
  * })
- * 
  * 
  * shader.fragmentShader = shader.fragmentShader.replace(
  *   `#include <output_fragment>`,
@@ -36,12 +50,16 @@ interface Step {
  */
 export default class ColorRamp {
   public shader: string;
-  public name: string;
   public texture: DataTexture
+  public options: Options
 
-  constructor({ name, steps }: { name: string, steps: Step[] }) {
-    this.name = name;
-    this.texture = this.getConstantRamp(steps)
+  constructor(public name: string, public stops: Stop[], options?: Partial<Options>) {
+    this.options = {
+      interpolation: linear,
+      textureSize: 256,
+      ...options
+    }
+    this.texture = this.getRamp(this.stops)
     this.shader = /*glsl*/ `
       uniform sampler2D ${this.name};
 
@@ -56,46 +74,62 @@ export default class ColorRamp {
     `
   }
 
-  set ramp(steps: Step[]) {
-    this.texture = this.getConstantRamp(steps)
+  set ramp(stops: Stop[]) {
+    this.texture = this.getRamp(stops)
   }
 
   get ramp(): DataTexture {
     return this.texture
   }
 
-  /**
-   * credit to https://codesandbox.io/p/sandbox/threejs-color-ramp-7epeo9?file=%2Fsrc%2FApp.js%3A93%2C6-102%2C4
-   */
-  getConstantRamp(steps: Step[]) {
+  getRamp(stops: Stop[]) {
     const arr = [];
-    const color = new Color();
+    const curColor = new Color();
+    const nextColor = new Color();
 
-    const sorted = [...steps].sort((a, b) => a.pos - b.pos);
+    const sorted = stops.slice().sort((a, b) => a.pos - b.pos);
+    let curStopIndex = 0
+    for (let i = 0; i < this.options.textureSize; i++) {
+      const position = i / this.options.textureSize;
+      const curStop = sorted[curStopIndex]!
+      const nextStop = sorted[curStopIndex + 1]
+      const curPos = curStop.pos
+      const nextPos = nextStop?.pos || 1
+      curColor.set(curStop.color)
+      nextColor.set(nextStop?.color || curStop.color)
 
-    for (let i = 0; i < 1; i++) {
-      for (let j = 0; j < 256; j++) {
-        let position = j / 256;
-        const stop = sorted.reduce((prev, curr) => {
-          if (curr.pos <= position && curr.pos > prev.pos) {
-            return curr;
-          }
-          return prev;
-        });
+      console.log(position, curPos, nextPos, curColor, nextColor)
 
-        if (stop) {
-          color.set(stop.color);
-          arr.push(color.r * 255, color.g * 255, color.b * 255, 255);
-        }
+      if (position < curPos) {
+        arr.push(curColor.r * 255, curColor.g * 255, curColor.b * 255, 255)
+      } else if (position >= curPos && position < nextPos) {
+        const progress = (position - curPos) / (nextPos - curPos)
+        arr.push(
+          this.options.interpolation(curColor.r, nextColor.r, progress) * 255,
+          this.options.interpolation(curColor.g, nextColor.g, progress) * 255,
+          this.options.interpolation(curColor.b, nextColor.b, progress) * 255,
+          255,
+        )
+      } else {
+        arr.push(nextColor.r * 255, nextColor.g * 255, nextColor.b * 255, 255)
+        curStopIndex++
       }
     }
 
     const texture = new DataTexture(
       new Uint8Array(arr),
-      256,
+      this.options.textureSize,
       1
     );
     texture.needsUpdate = true;
     return texture;
   }
+}
+
+export const linear: InterpolationFunction = function linear(a, b, x) {
+  return a + (b - a) * x
+}
+
+export const constant: InterpolationFunction = function constant(a, _b, _x) {
+  return a
 }
