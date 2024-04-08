@@ -55,57 +55,38 @@ function initScene(container: HTMLDivElement) {
     shader.uniforms.uPointing = { value: DEFAULT_Z };
     shader.uniforms.uIntensity = { value: 0 };
 
-    const demo = new ColorRamp(
-      "uDemo",
-      [
-        { color: 0xff0000, pos: 0.25 },
-        { color: 0x00ff00, pos: 0.5 },
-        { color: 0x0000ff, pos: 0.75 },
-      ],
-      {
-        interpolation: constant,
-      }
-    );
+    const noiseMultiplierRamp = new ColorRamp("uRange", [
+      { color: 0xff0000, pos: 0 },
+      { color: 0x330000, pos: 0.2 },
+      { color: 0x000000, pos: 0.25 },
+      { color: 0x000000, pos: 0.8 },
+      { color: 0x330000, pos: 0.85 },
+      { color: 0xff00ff, pos: 1 },
+    ]);
 
-    shader.uniforms[demo.name] = { value: demo.texture };
+    shader.uniforms[noiseMultiplierRamp.name] = {
+      value: noiseMultiplierRamp.texture,
+    };
 
     // customize vertex shader
     shader.vertexShader = shader.vertexShader.replace(
       /*glsl*/ `#include <common>`,
       /*glsl*/ `#include <common>
         ${pnoiseGLSL}
+        ${noiseMultiplierRamp.shader}
         uniform float uPointing;
         uniform float uIntensity;
         uniform float uTime;
-        varying float uUvX;
         `
     );
     shader.vertexShader = shader.vertexShader.replace(
       /*glsl*/ `#include <displacementmap_vertex>`,
       /*glsl*/ `#include <displacementmap_vertex>
-        uUvX = uv.x;
-        // uv.x value will jump to 0 again after reach 1, use sin make it cycles continually.
-        float cycle = sin(
-          uv.x * 2. * PI
-          // uPointing controls which direction noise peak is pointing to.
-          + uPointing
-          // offset a half of the displaced range, to make the peak following cursor exactly.
-          + PI / 2.
-        );
-        float noiseMultiplier = clamp(
-          // shrink the range of displacement by half
-          (cycle - 0.5) * 2.
-          , 0., 1.);
+        float noiseMultiplier = colorRamp(fract(uv.x + uPointing / (2. * PI)), ${noiseMultiplierRamp.name}).r;
         float noise = pnoise(position * 3. + uTime / 6.);
         float displacement = noise * noiseMultiplier * uIntensity;
         vec3 newPosition = position + normal * displacement;
         transformed = newPosition;
-      `
-    );
-    shader.fragmentShader = shader.fragmentShader.replace(
-      /*glsl*/ `#include <output_fragment>`,
-      /*glsl*/ `#include <output_fragment>
-        ${demo.shader}
       `
     );
 
@@ -115,8 +96,6 @@ function initScene(container: HTMLDivElement) {
       /*glsl*/ `#include <clipping_planes_pars_fragment>
         ${pnoiseGLSL}
         uniform float uTime;
-        varying float uUvX;
-        ${demo.shader}
       `
     );
     shader.fragmentShader = shader.fragmentShader.replace(
@@ -124,8 +103,7 @@ function initScene(container: HTMLDivElement) {
       /*glsl*/ `#include <color_fragment>
        float noise = abs(pnoise(vec3(vViewPosition.z * 40. + uTime / 10.)) - 1.);
        vec3 color = vec3(step(1., noise));
-
-       diffuseColor = colorRamp(uUvX, ${demo.name});
+       diffuseColor = vec4(color, 1.0);
       `
     );
   };

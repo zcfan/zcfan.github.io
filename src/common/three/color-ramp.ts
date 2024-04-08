@@ -96,7 +96,7 @@ export default class ColorRamp {
       const curPos = curStop.pos
       const nextPos = nextStop?.pos || 1
       curColor.set(curStop.color)
-      nextColor.set(nextStop?.color || curStop.color)
+      nextColor.set(nextStop?.color ?? curStop.color)
 
       console.log(position, curPos, nextPos, curColor, nextColor)
 
