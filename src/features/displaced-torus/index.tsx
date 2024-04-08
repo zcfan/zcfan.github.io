@@ -12,6 +12,7 @@ import {
 
 import pnoiseGLSL from "./pnoise.glsl";
 import { isMatarialWithMap, isMesh } from "../../common/three/utils";
+import ColorRamp from "../../common/three/color-ramp";
 
 const DEFAULT_Z = 0;
 
@@ -54,6 +55,17 @@ function initScene(container: HTMLDivElement) {
     shader.uniforms.uPointing = { value: DEFAULT_Z };
     shader.uniforms.uIntensity = { value: 0 };
 
+    const demo = new ColorRamp({
+      name: "uDemo",
+      steps: [
+        { color: 0xff0000, pos: 0 },
+        { color: 0x00ff00, pos: 0.5 },
+        { color: 0x0000ff, pos: 1 },
+      ],
+    });
+
+    shader.uniforms[demo.name] = { value: demo.texture };
+
     // customize vertex shader
     shader.vertexShader = shader.vertexShader.replace(
       /*glsl*/ `#include <common>`,
@@ -62,11 +74,13 @@ function initScene(container: HTMLDivElement) {
         uniform float uPointing;
         uniform float uIntensity;
         uniform float uTime;
+        varying float uUvX;
         `
     );
     shader.vertexShader = shader.vertexShader.replace(
       /*glsl*/ `#include <displacementmap_vertex>`,
       /*glsl*/ `#include <displacementmap_vertex>
+        uUvX = uv.x;
         // uv.x value will jump to 0 again after reach 1, use sin make it cycles continually.
         float cycle = sin(
           uv.x * 2. * PI
@@ -85,6 +99,12 @@ function initScene(container: HTMLDivElement) {
         transformed = newPosition;
       `
     );
+    shader.fragmentShader = shader.fragmentShader.replace(
+      /*glsl*/ `#include <output_fragment>`,
+      /*glsl*/ `#include <output_fragment>
+        ${demo.shader}
+      `
+    );
 
     // customize fragment shader
     shader.fragmentShader = shader.fragmentShader.replace(
@@ -92,6 +112,8 @@ function initScene(container: HTMLDivElement) {
       /*glsl*/ `#include <clipping_planes_pars_fragment>
         ${pnoiseGLSL}
         uniform float uTime;
+        varying float uUvX;
+        ${demo.shader}
       `
     );
     shader.fragmentShader = shader.fragmentShader.replace(
@@ -99,7 +121,8 @@ function initScene(container: HTMLDivElement) {
       /*glsl*/ `#include <color_fragment>
        float noise = abs(pnoise(vec3(vViewPosition.z * 40. + uTime / 10.)) - 1.);
        vec3 color = vec3(step(1., noise));
-       diffuseColor = vec4(color, 1.0);
+
+       diffuseColor = colorRamp(uUvX, ${demo.name});
       `
     );
   };
