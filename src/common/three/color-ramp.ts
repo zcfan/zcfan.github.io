@@ -124,6 +124,10 @@ export default class ColorRamp {
     texture.needsUpdate = true;
     return texture;
   }
+
+  dispose() {
+    this.texture.dispose()
+  }
 }
 
 export const linear: InterpolationFunction = function linear(a, b, x) {
