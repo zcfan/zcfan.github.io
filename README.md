@@ -2,6 +2,7 @@ zcfan user page
 
 ## TODO:
 
+- Reuse same Threejs context(canvas, webgl) across all demos, I found no way to destory context completely when switching demo.
 - Make this site accessible to Chinese mainland. Otherwise my future employers might not able to see it. 🐶🐶🐶
 - 重新创建书房（study room）场景，第一次搞 blender 经验不足，join objects 的时候没留备份，现在想再编辑一些，凉凉了
 - 修复接缝处的 glitch，应该是 UV Map islands 之间没有加 margin
@@ -9,6 +10,10 @@ zcfan user page
 - 换用 react-three-fiber 组织 3d 场景, or find another better way to orgnize threejs code base. [This](https://pierfrancesco-soffritti.medium.com/how-to-organize-the-structure-of-a-three-js-project-77649f58fa3f) seems convincible.
 
 ## DEV NOTE:
+
+### 2024-04-08:
+
+Debug memory leaks. Learned a little trick when dealing with threejs memory management. log `renderer.info()` after dispose code will tell you what you forgot to release.
 
 ### 2024-04-07:
 

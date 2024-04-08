@@ -6,6 +6,7 @@ import {
   setupOnResize,
   setupWindowPointerOrTouchMove,
 } from "../../common/three/setup-events";
+import { isMatarialWithMap, isMesh } from "../../common/three/utils";
 
 export function initScene(container: HTMLDivElement, onLoad: () => void) {
   const { width, height } = container.getBoundingClientRect();
@@ -85,7 +86,9 @@ export function initScene(container: HTMLDivElement, onLoad: () => void) {
   );
 
   // render loop
+  let stopped = false;
   function animate() {
+    if (stopped) return;
     if (room) {
       room.rotation.x += (targetX - room.rotation.x) / 6;
       room.rotation.y += (targetY - room.rotation.y) / 6;
@@ -98,9 +101,27 @@ export function initScene(container: HTMLDivElement, onLoad: () => void) {
   animate();
 
   return () => {
+    stopped = true;
+    scene.traverse((obj) => {
+      if (isMesh(obj)) {
+        obj.geometry.dispose();
+        (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach(
+          (material) => {
+            if (isMatarialWithMap(material)) {
+              material.map.dispose();
+            }
+            material.dispose();
+          }
+        );
+      }
+    });
+    scene.clear();
+    dracoLoader.dispose();
     renderer.dispose();
+    renderer.forceContextLoss();
     removeOnResize();
     removeWindowPointerOrTouchMove();
     container.removeEventListener("pointerdown", onPointerDown);
+    console.log(renderer.info);
   };
 }

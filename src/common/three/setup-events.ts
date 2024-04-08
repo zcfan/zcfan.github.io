@@ -27,8 +27,7 @@ export function setupWindowPointerOrTouchMove(
   onMove: (x: number, y: number) => void
 ): () => void {
   function handleMove(event: PointerEvent | TouchEvent) {
-    const { clientX, clientY } =
-      event instanceof TouchEvent ? event.touches[0] : event;
+    const { clientX, clientY } = isTouchEvent(event) ? event.touches?.[0] : event;
     onMove(clientX / window.innerWidth, clientY / window.innerHeight);
   }
 
@@ -49,4 +48,8 @@ export function setupWindowPointerOrTouchMove(
     window.removeEventListener("touchstart", handleMove);
     window.removeEventListener("touchend", handleOut);
   };
+}
+
+function isTouchEvent(event: PointerEvent | TouchEvent): event is TouchEvent {
+  return (event as TouchEvent).touches !== undefined
 }

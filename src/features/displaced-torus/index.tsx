@@ -11,6 +11,7 @@ import {
 } from "../../common/three/setup-events";
 
 import pnoiseGLSL from "./pnoise.glsl";
+import { isMatarialWithMap, isMesh } from "../../common/three/utils";
 
 const DEFAULT_Z = 0;
 
@@ -137,7 +138,9 @@ function initScene(container: HTMLDivElement) {
   });
   // #endregion
 
+  let stopped = false;
   function animate() {
+    if (stopped) return;
     if (customizedShader) {
       const elapsedTime = clock.getElapsedTime();
       customizedShader.uniforms.uTime.value = elapsedTime;
@@ -151,8 +154,32 @@ function initScene(container: HTMLDivElement) {
   animate();
 
   return () => {
+    stopped = true;
+    pointLight.dispose();
+    scene.remove(pointLight);
+    light.dispose();
+    scene.remove(light);
+    torus.geometry.dispose();
+    torus.material.dispose();
+    scene.remove(torus);
+    scene.traverse((obj) => {
+      if (isMesh(obj)) {
+        obj.geometry.dispose();
+        (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach(
+          (material) => {
+            if (isMatarialWithMap(material)) {
+              material.map.dispose();
+            }
+            material.dispose();
+          }
+        );
+      }
+    });
+    scene.clear();
     renderer.dispose();
+    renderer.forceContextLoss();
     removeOnResize();
     remoteWindowPointOrTouchMove();
+    console.log(renderer.info);
   };
 }
