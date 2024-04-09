@@ -44,8 +44,8 @@ export function initScene(container: HTMLDivElement, onLoad: () => void) {
     room.rotation.y = ROOM_Y_ROTATION;
     scene.add(room);
     mixer = new THREE.AnimationMixer(room);
-    animOpenDoor = mixer.clipAction(animations[0]);
-    const animFanRolling = mixer.clipAction(animations[1]);
+    animOpenDoor = mixer.clipAction(animations[0]!);
+    const animFanRolling = mixer.clipAction(animations[1]!);
     animOpenDoor.setLoop(THREE.LoopOnce, 1);
     animOpenDoor.clampWhenFinished = true;
     animFanRolling.play();

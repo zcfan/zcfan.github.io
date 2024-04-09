@@ -12,7 +12,7 @@ import {
 
 import pnoiseGLSL from "./pnoise.glsl";
 import { isMatarialWithMap, isMesh } from "../../common/three/utils";
-import ColorRamp, { constant } from "../../common/three/color-ramp";
+import ColorRamp from "../../common/three/color-ramp";
 
 const DEFAULT_Z = 0;
 

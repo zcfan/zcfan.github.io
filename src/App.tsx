@@ -18,7 +18,7 @@ const SCENES = [DisplacedTorus, StudyRoom];
 function Scenes() {
   const [ind, setInd] = useState(0);
 
-  const Scene = SCENES[ind];
+  const Scene = SCENES[ind]!;
   return (
     <>
       {ind > 0 && (

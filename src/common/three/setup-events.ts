@@ -27,7 +27,7 @@ export function setupWindowPointerOrTouchMove(
   onMove: (x: number, y: number) => void
 ): () => void {
   function handleMove(event: PointerEvent | TouchEvent) {
-    const { clientX, clientY } = isTouchEvent(event) ? event.touches?.[0] : event;
+    const { clientX, clientY } = isTouchEvent(event) ? event.touches?.[0]! : event;
     onMove(clientX / window.innerWidth, clientY / window.innerHeight);
   }
 
