@@ -6,6 +6,9 @@ export default function Navigator() {
         <li>
           <a href="https://www.alanslab.today/blog">Blog</a>
         </li>
+        <li>
+          <a href="https://github.com/zcfan">Github</a>
+        </li>
       </ul>
     </nav>
   );

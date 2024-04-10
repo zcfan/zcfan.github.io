@@ -12,9 +12,6 @@ import {
 
 import pnoiseGLSL from "../../common/three/pnoise.glsl";
 import { isMatarialWithMap, isMesh } from "../../common/three/utils";
-import ColorRamp from "../../common/three/color-ramp";
-
-const DEFAULT_Z = 0;
 
 export default function DisplacedTorus() {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -29,7 +26,6 @@ export default function DisplacedTorus() {
 
 function initScene(container: HTMLDivElement) {
   const { width, height } = container.getBoundingClientRect();
-  const clock = new THREE.Clock();
   const scene = new THREE.Scene();
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
@@ -37,7 +33,7 @@ function initScene(container: HTMLDivElement) {
   renderer.setPixelRatio(window.devicePixelRatio);
   container.appendChild(renderer.domElement);
   scene.background = new THREE.Color(0xffffff);
-  camera.position.set(0, 0, 7);
+  camera.position.set(3, 3, 7);
   camera.lookAt(0, 0, 0);
 
   // #region Customize MeshStandardMaterial
@@ -46,47 +42,24 @@ function initScene(container: HTMLDivElement) {
     color: 0xffffff,
     roughness: 0,
     metalness: 0,
+    transparent: true,
   });
 
-  let customizedShader: THREE.WebGLProgramParametersWithUniforms;
   material.onBeforeCompile = (shader) => {
-    customizedShader = shader;
-    shader.uniforms.uTime = { value: 0 };
-    shader.uniforms.uPointing = { value: DEFAULT_Z };
-    shader.uniforms.uIntensity = { value: 0 };
-
-    const noiseMultiplierRamp = new ColorRamp("uRange", [
-      { color: 0xff0000, pos: 0 },
-      { color: 0x330000, pos: 0.2 },
-      { color: 0x000000, pos: 0.25 },
-      { color: 0x000000, pos: 0.8 },
-      { color: 0x330000, pos: 0.85 },
-      { color: 0xff00ff, pos: 1 },
-    ]);
-
-    shader.uniforms[noiseMultiplierRamp.name] = {
-      value: noiseMultiplierRamp.texture,
+    shader.uniforms.uNoise = {
+      value: new THREE.TextureLoader().load("textures/noise.png"),
     };
 
-    // customize vertex shader
     shader.vertexShader = shader.vertexShader.replace(
       /*glsl*/ `#include <common>`,
       /*glsl*/ `#include <common>
-        ${pnoiseGLSL}
-        ${noiseMultiplierRamp.shader}
-        uniform float uPointing;
-        uniform float uIntensity;
-        uniform float uTime;
-        `
+        varying vec2 vUv;
+      `
     );
     shader.vertexShader = shader.vertexShader.replace(
       /*glsl*/ `#include <displacementmap_vertex>`,
       /*glsl*/ `#include <displacementmap_vertex>
-        float noiseMultiplier = colorRamp(fract(uv.x + uPointing / (2. * PI)), ${noiseMultiplierRamp.name}).r;
-        float noise = pnoise(position * 3. + uTime / 6.);
-        float displacement = noise * noiseMultiplier * uIntensity;
-        vec3 newPosition = position + normal * displacement;
-        transformed = newPosition;
+        vUv = uv;
       `
     );
 
@@ -95,62 +68,60 @@ function initScene(container: HTMLDivElement) {
       /*glsl*/ `#include <clipping_planes_pars_fragment>`,
       /*glsl*/ `#include <clipping_planes_pars_fragment>
         ${pnoiseGLSL}
-        uniform float uTime;
+        uniform sampler2D uNoise;
+        varying vec2 vUv;
       `
     );
     shader.fragmentShader = shader.fragmentShader.replace(
-      /*glsl*/ `#include <color_fragment>`,
-      /*glsl*/ `#include <color_fragment>
-       float noise = abs(pnoise(vec3(vViewPosition.z * 40. + uTime / 10.)) - 1.);
-       vec3 color = vec3(step(1., noise));
-       diffuseColor = vec4(color, 1.0);
+      /*glsl*/ `#include <dithering_fragment>`,
+      /*glsl*/ `#include <dithering_fragment>
+       float threshold = clamp(texture2D(uNoise, vUv).r * 1.2, 0., 1.);
+       float bright = (gl_FragColor.r + gl_FragColor.g + gl_FragColor.b + gl_FragColor.a) / 4. / 2.;
+       gl_FragColor = vec4(gl_FragColor.rgb, bright > threshold ? 1.0 : 0.);
       `
     );
+    console.log(shader.fragmentShader);
   };
   // #endregion
 
   // #region Setup scene
-  const torus = new THREE.Mesh(
-    new THREE.TorusGeometry(1.4, 0.3, 200, 200),
-    material
-  );
-  scene.add(torus);
+  const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), material);
+  scene.add(cube);
 
-  const light = new THREE.RectAreaLight(0xffffff, 1.2, 15, 15);
-  light.position.set(0, 3, 5);
+  const light = new THREE.RectAreaLight(0xffffff, 0.4, 15, 15);
+  light.position.set(0, 3, 0);
   light.lookAt(0, 0, 0);
   scene.add(light);
 
   var pointLight = new THREE.PointLight(0xffffff, 200, 0, 4);
-  pointLight.position.set(1, 3, 5);
+  pointLight.position.set(2, 3, 5);
   scene.add(pointLight);
   // #endregion
 
   // #region Setup events
   const removeOnResize = setupOnResize(container, renderer, camera);
 
-  let targetZ = DEFAULT_Z;
-  let targetIndensity = 0;
-  const remoteWindowPointOrTouchMove = setupWindowPointerOrTouchMove((x, y) => {
-    if (x === -1 && y === -1) {
-      targetIndensity = 0;
-      return;
+  let targetX = 0;
+  let targetY = 0;
+  const remoteWindowPointOrTouchMove = setupWindowPointerOrTouchMove(
+    (x: number, y: number) => {
+      if (x === -1 && y === -1) {
+        targetX = 0;
+        targetY = 0;
+        return;
+      }
+      targetY = (x - 0.5) * 2 * 0.7;
+      targetX = (y - 0.5) * 2 * 0.4;
     }
-    targetZ = -Math.atan2(-(y - 0.5) * 2, (x - 0.5) * 2);
-    targetIndensity =
-      Math.sqrt(Math.pow(y - 0.5, 2) + Math.pow(x - 0.5, 2)) * 1.7;
-  });
+  );
   // #endregion
 
   let stopped = false;
   function animate() {
     if (stopped) return;
-    if (customizedShader) {
-      const elapsedTime = clock.getElapsedTime();
-      customizedShader.uniforms.uTime!.value = elapsedTime;
-      customizedShader.uniforms.uPointing!.value = targetZ;
-      customizedShader.uniforms.uIntensity!.value +=
-        (targetIndensity - customizedShader.uniforms.uIntensity!.value) / 6;
+    if (cube) {
+      cube.rotation.x += (targetX - cube.rotation.x) / 6;
+      cube.rotation.y += (targetY - cube.rotation.y) / 6;
     }
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
@@ -163,9 +134,9 @@ function initScene(container: HTMLDivElement) {
     scene.remove(pointLight);
     light.dispose();
     scene.remove(light);
-    torus.geometry.dispose();
-    torus.material.dispose();
-    scene.remove(torus);
+    cube.geometry.dispose();
+    cube.material.dispose();
+    scene.remove(cube);
     scene.traverse((obj) => {
       if (isMesh(obj)) {
         obj.geometry.dispose();
