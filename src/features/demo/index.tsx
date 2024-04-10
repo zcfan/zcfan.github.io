@@ -27,6 +27,7 @@ export default function DisplacedTorus() {
 function initScene(container: HTMLDivElement) {
   const { width, height } = container.getBoundingClientRect();
   const scene = new THREE.Scene();
+  const clock = new THREE.Clock();
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
   renderer.setSize(width, height);
@@ -45,9 +46,14 @@ function initScene(container: HTMLDivElement) {
     transparent: true,
   });
 
+  let customizedShader: THREE.WebGLProgramParametersWithUniforms;
   material.onBeforeCompile = (shader) => {
+    customizedShader = shader;
     shader.uniforms.uNoise = {
       value: new THREE.TextureLoader().load("textures/noise.png"),
+    };
+    shader.uniforms.uTime = {
+      value: 0,
     };
 
     shader.vertexShader = shader.vertexShader.replace(
@@ -68,6 +74,7 @@ function initScene(container: HTMLDivElement) {
       /*glsl*/ `#include <clipping_planes_pars_fragment>`,
       /*glsl*/ `#include <clipping_planes_pars_fragment>
         ${pnoiseGLSL}
+        uniform float uTime;
         uniform sampler2D uNoise;
         varying vec2 vUv;
       `
@@ -75,9 +82,10 @@ function initScene(container: HTMLDivElement) {
     shader.fragmentShader = shader.fragmentShader.replace(
       /*glsl*/ `#include <dithering_fragment>`,
       /*glsl*/ `#include <dithering_fragment>
+       
        float threshold = clamp(texture2D(uNoise, vUv).r * 1.2, 0., 1.);
        float bright = (gl_FragColor.r + gl_FragColor.g + gl_FragColor.b + gl_FragColor.a) / 4. / 2.;
-       gl_FragColor = vec4(gl_FragColor.rgb, bright > threshold ? 1.0 : 0.);
+       gl_FragColor = vec4(gl_FragColor.rgb, ((bright > threshold) || (uTime * 10. > vViewPosition.z)) ? 1.0 : 0.);
       `
     );
     console.log(shader.fragmentShader);
@@ -122,6 +130,9 @@ function initScene(container: HTMLDivElement) {
     if (cube) {
       cube.rotation.x += (targetX - cube.rotation.x) / 6;
       cube.rotation.y += (targetY - cube.rotation.y) / 6;
+    }
+    if (customizedShader) {
+      customizedShader.uniforms.uTime!.value = clock.getElapsedTime();
     }
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
