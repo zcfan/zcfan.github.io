@@ -33,7 +33,7 @@ function initScene(container: HTMLDivElement) {
   renderer.setPixelRatio(window.devicePixelRatio);
   container.appendChild(renderer.domElement);
   scene.background = new THREE.Color(0xffffff);
-  camera.position.set(3, 3, 7);
+  camera.position.set(-3, 3, 7);
   camera.lookAt(0, 0, 0);
 
   // #region Customize MeshStandardMaterial
