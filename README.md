@@ -1,6 +1,6 @@
 zcfan user page
 
-## TODO:
+## TODO
 
 - Reuse same Threejs context(canvas, webgl) across all demos, I found no way to destory context completely when switching demo.
 - Make this site accessible to Chinese mainland. Otherwise my future employers might not able to see it. 🐶🐶🐶
@@ -9,7 +9,11 @@ zcfan user page
 - android chrome 上点门得点偏下一些才能触发动画。应该是 container 的 offsetTop 数值有问题，大概率是顶部浏览器导航条高度导致，有空看看
 - 换用 react-three-fiber 组织 3d 场景, or find another better way to orgnize threejs code base. [This](https://pierfrancesco-soffritti.medium.com/how-to-organize-the-structure-of-a-three-js-project-77649f58fa3f) seems convincible.
 
-## DEV NOTE:
+## DEV NOTE
+
+### 2024-04-10:
+
+Found a Great shader library: https://lygia.xyz/
 
 ### 2024-04-08:
 
