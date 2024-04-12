@@ -88,7 +88,6 @@ function initScene(container: HTMLDivElement) {
        gl_FragColor = vec4(gl_FragColor.rgb, ((bright > threshold) || (uTime * 10. > vViewPosition.z)) ? 1.0 : 0.);
       `
     );
-    console.log(shader.fragmentShader);
   };
   // #endregion
 
@@ -166,6 +165,5 @@ function initScene(container: HTMLDivElement) {
     renderer.forceContextLoss();
     removeOnResize();
     remoteWindowPointOrTouchMove();
-    console.log(renderer.info);
   };
 }

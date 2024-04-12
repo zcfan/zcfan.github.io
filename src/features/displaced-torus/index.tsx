@@ -184,6 +184,5 @@ function initScene(container: HTMLDivElement) {
     renderer.forceContextLoss();
     removeOnResize();
     remoteWindowPointOrTouchMove();
-    console.log(renderer.info);
   };
 }

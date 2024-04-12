@@ -122,6 +122,5 @@ export function initScene(container: HTMLDivElement, onLoad: () => void) {
     removeOnResize();
     removeWindowPointerOrTouchMove();
     container.removeEventListener("pointerdown", onPointerDown);
-    console.log(renderer.info);
   };
 }

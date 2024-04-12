@@ -98,8 +98,6 @@ export default class ColorRamp {
       curColor.set(curStop.color)
       nextColor.set(nextStop?.color ?? curStop.color)
 
-      console.log(position, curPos, nextPos, curColor, nextColor)
-
       if (position < curPos) {
         arr.push(curColor.r * 255, curColor.g * 255, curColor.b * 255, 255)
       } else if (position >= curPos && position < nextPos) {
