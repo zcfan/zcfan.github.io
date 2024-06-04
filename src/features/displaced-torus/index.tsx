@@ -5,11 +5,14 @@
 
 import * as THREE from "three";
 import { useEffect, useRef } from "react";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+
 import {
   setupOnResize,
   setupWindowPointerOrTouchMove,
 } from "../../common/three/setup-events";
-
 import pnoiseGLSL from "../../common/three/pnoise.glsl";
 import { isMatarialWithMap, isMesh } from "../../common/three/utils";
 import ColorRamp from "../../common/three/color-ramp";
@@ -36,6 +39,18 @@ function initScene(container: HTMLDivElement) {
   renderer.setSize(width, height);
   renderer.setPixelRatio(window.devicePixelRatio);
   container.appendChild(renderer.domElement);
+
+  const composer = new EffectComposer(renderer);
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    0.3,
+    1,
+    0.85
+  );
+  composer.addPass(bloomPass);
+
   scene.background = new THREE.Color(0xffffff);
   camera.position.set(0, 0, 7);
   camera.lookAt(0, 0, 0);
@@ -152,7 +167,8 @@ function initScene(container: HTMLDivElement) {
       customizedShader.uniforms.uIntensity!.value +=
         (targetIndensity - customizedShader.uniforms.uIntensity!.value) / 6;
     }
-    renderer.render(scene, camera);
+    // renderer.render(scene, camera);
+    composer.render();
     requestAnimationFrame(animate);
   }
   animate();
@@ -180,6 +196,9 @@ function initScene(container: HTMLDivElement) {
       }
     });
     scene.clear();
+    composer.dispose();
+    renderPass.dispose();
+    bloomPass.dispose();
     renderer.dispose();
     renderer.forceContextLoss();
     removeOnResize();
