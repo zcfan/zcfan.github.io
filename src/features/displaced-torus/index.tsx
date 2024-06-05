@@ -45,9 +45,9 @@ function initScene(container: HTMLDivElement) {
   composer.addPass(renderPass);
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    0.3,
-    1,
-    0.85
+    0.4,
+    0.1,
+    0.87,
   );
   composer.addPass(bloomPass);
 
