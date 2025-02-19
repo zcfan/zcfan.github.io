@@ -1,12 +1,16 @@
-{ 
-	"rewrites": [ 
-		{ 
-			"source": "/blog/:subdir*", 
-			"destination": "https://hugo-blog-vert-one.vercel.app/:subdir*" 
-		}, 
-		{ 
-			"source": "/(.*)", 
-			"destination": "/" 
-		} 
-	] 
+{
+  "rewrites": [
+    {
+      "source": "/blog/:subdir*",
+      "destination": "https://hugo-blog-vert-one.vercel.app/:subdir*"
+    },
+    {
+      "source": "/blog/:subdir*/",
+      "destination": "https://hugo-blog-vert-one.vercel.app/:subdir*/"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
 }
